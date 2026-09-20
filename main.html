@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Traffic Monitoring & Intelligent Route Planning</title>
+<style>
+:root{
+  --bg:#07111f; --panel:#0d1b2d; --panel2:#11243a; --text:#e8f0f8;
+  --muted:#9db0c4; --blue:#4da3ff; --green:#35d07f; --yellow:#ffd34d;
+  --orange:#ff9f43; --red:#ff5c67; --border:#203851;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#06101d,#0a1728 55%,#07111f);color:var(--text);line-height:1.6}
+a{color:inherit;text-decoration:none}
+.container{max-width:1250px;margin:auto;padding:0 22px}
+.hero{padding:70px 0 45px;text-align:center;background:radial-gradient(circle at 50% 0,#17385d 0,transparent 48%)}
+.badge{display:inline-block;padding:7px 14px;border:1px solid #31577a;border-radius:999px;color:#8bc8ff;background:#0b2036;font-size:13px}
+h1{font-size:clamp(34px,5vw,62px);line-height:1.05;margin:18px 0 15px}
+.hero p{max-width:800px;margin:auto;color:var(--muted);font-size:18px}
+.nav{position:sticky;top:0;z-index:20;background:rgba(7,17,31,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.nav .container{display:flex;gap:8px;overflow:auto;padding-top:10px;padding-bottom:10px}
+.nav a{white-space:nowrap;padding:8px 12px;border-radius:9px;color:var(--muted);font-size:14px}
+.nav a:hover{background:var(--panel2);color:#fff}
+section{padding:55px 0}
+.section-title{margin-bottom:25px}
+.section-title h2{font-size:30px;margin:0 0 5px}
+.section-title p{color:var(--muted);margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.card{background:linear-gradient(145deg,rgba(17,36,58,.9),rgba(10,25,42,.9));border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.card h3{margin-top:0}
+.flow{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:20px 0}
+.flow .box{padding:15px 18px;background:var(--panel2);border:1px solid #31577a;border-radius:12px;text-align:center;min-width:150px}
+.arrow{font-size:24px;color:var(--blue)}
+.pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:center}
+.pipeline .step{padding:18px 10px;text-align:center;background:var(--panel);border:1px solid var(--border);border-radius:14px}
+.step .num{font-size:12px;color:var(--blue)}
+.big-diagram{background:#081522;border:1px solid var(--border);border-radius:20px;padding:28px;overflow:auto}
+.layer{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.node{padding:14px 18px;background:var(--panel2);border:1px solid #31577a;border-radius:12px;min-width:180px;text-align:center}
+.node.primary{border-color:#4da3ff;box-shadow:0 0 22px rgba(77,163,255,.12)}
+.down{text-align:center;font-size:28px;color:var(--blue);margin:8px}
+table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:14px;overflow:hidden}
+th,td{padding:12px 14px;border-bottom:1px solid var(--border);text-align:left}
+th{background:#122943;color:#bfe0ff}
+td{color:#d5e0eb}
+code{background:#071522;border:1px solid var(--border);padding:2px 6px;border-radius:5px;color:#9ed1ff}
+pre{background:#06101a;border:1px solid var(--border);border-radius:14px;padding:18px;overflow:auto;color:#bfe0d0}
+.traffic{display:flex;gap:12px;flex-wrap:wrap}
+.status{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:10px}
+.dot{width:13px;height:13px;border-radius:50%}
+.green{background:var(--green)} .yellow{background:var(--yellow)} .orange{background:var(--orange)} .red{background:var(--red)}
+.timeline{border-left:2px solid #31577a;margin-left:10px;padding-left:25px}
+.milestone{position:relative;margin:0 0 22px}
+.milestone:before{content:"";position:absolute;left:-34px;top:7px;width:13px;height:13px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 4px #0a1b2c}
+.milestone h3{margin:0}
+.milestone p{margin:3px 0;color:var(--muted)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.callout{border-left:4px solid var(--blue);background:#0b1d30;padding:18px 20px;border-radius:0 12px 12px 0}
+footer{padding:35px 0 60px;text-align:center;color:var(--muted);border-top:1px solid var(--border)}
+@media(max-width:800px){.pipeline{grid-template-columns:1fr}.two{grid-template-columns:1fr}.hero{padding-top:45px}}
+</style>
+</head>
+<body>
+<header class="hero" id="top">
+  <div class="container">
+    <span class="badge">PROJECT ARCHITECTURE • AI + COMPUTER VISION + ROUTING</span>
+    <h1>AI-Based Real-Time Traffic Monitoring<br>& Intelligent Route Planning</h1>
+    <p>Two connected systems: a traffic intelligence backend that converts junction images into structured traffic data, and a route planner that uses current traffic conditions to calculate travel time and routes.</p>
+  </div>
+</header>
+
+<nav class="nav">
+  <div class="container">
+    <a href="#architecture">Architecture</a><a href="#model1">Traffic AI</a><a href="#database">Database</a>
+    <a href="#routing">Routing</a><a href="#webapp">Web App</a><a href="#roadmap">Roadmap</a><a href="#stack">Tech Stack</a>
+  </div>
+</nav>
+
+<main>
+<section id="architecture">
+<div class="container">
+  <div class="section-title"><h2>1. Complete System Architecture</h2><p>Image data is processed once into structured traffic information. The routing system consumes that information rather than processing images itself.</p></div>
+  <div class="big-diagram">
+    <div class="layer"><div class="node">📷 1000+ Traffic Images<br><small>Junction camera data</small></div></div>
+    <div class="down">↓</div>
+    <div class="layer"><div class="node primary">🤖 Model 1 — Traffic Detection / Analysis<br><small>Vehicle detection • count • speed • occupancy • queue • incidents</small></div></div>
+    <div class="down">↓</div>
+    <div class="layer"><div class="node">⚙️ Traffic Feature Generator</div></div>
+    <div class="down">↓</div>
+    <div class="layer"><div class="node">🗄️ Traffic Database<br><small>Junction • location • traffic features • timestamp</small></div></div>
+    <div class="down">↓</div>
+    <div class="layer"><div class="node primary">🧭 Routing Engine<br><small>Road network + current traffic → route + ETA</small></div></div>
+    <div class="down">↓</div>
+    <div class="layer"><div class="node">🗺️ Web Application<br><small>Map • route • ETA • congestion colors</small></div></div>
+  </div>
+</div>
+</section>
+
+<section id="model1">
+<div class="container">
+  <div class="section-title"><h2>2. Model 1 — Traffic Intelligence</h2><p>Do not treat “image → all 8 features” as one operation. Different features require different information.</p></div>
+  <div class="grid">
+    <div class="card"><h3>🚗 Vehicle Count</h3><p>Object detection identifies cars, motorcycles, buses and trucks.</p><b>Output:</b><br>Cars 45 • Bikes 12 • Buses 3 • Trucks 4<br><strong>Total = 64</strong></div>
+    <div class="card"><h3>🛣️ Lane Occupancy</h3><p>Define lane/region boundaries and calculate how much of each region is occupied.</p><b>Example:</b> Lane 1 = 75%, Lane 2 = 45%, Lane 3 = 90%</div>
+    <div class="card"><h3>🚦 Queue Length</h3><p>Define a queue region near a signal/stop line and count vehicles inside it.</p><b>Example:</b> Queue = 23 vehicles</div>
+    <div class="card"><h3>💨 Average Speed</h3><p>A single image cannot reliably provide speed. Use sequential frames/video, vehicle tracking and camera calibration.</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>Recommended approach:</b> Phase 1 = image → vehicle count + occupancy + queue. Phase 2 = sequential frames/video → tracking + speed estimation.</div>
+</div>
+</section>
+
+<section>
+<div class="container">
+  <div class="section-title"><h2>3. Feature Acquisition Map</h2></div>
+  <table>
+    <thead><tr><th>Feature</th><th>How to obtain it</th><th>Data requirement</th></tr></thead>
+    <tbody>
+      <tr><td>Vehicle Count</td><td>Object detection</td><td>Single image can work</td></tr>
+      <tr><td>Lane Occupancy</td><td>Vehicle detection + lane regions</td><td>Single image can work</td></tr>
+      <tr><td>Queue Length</td><td>Vehicle positions / queue region</td><td>Single image can work</td></tr>
+      <tr><td>Incident</td><td>Object/event detection</td><td>Depends on incident definition</td></tr>
+      <tr><td>Average Speed</td><td>Vehicle tracking across time</td><td>Sequential frames/video</td></tr>
+      <tr><td>Road Condition</td><td>Image classification or predefined data</td><td>Dataset/labels required</td></tr>
+      <tr><td>Time</td><td>System timestamp</td><td>Timestamp</td></tr>
+      <tr><td>Traffic Level</td><td>Rules or ML classifier</td><td>Traffic features + labels</td></tr>
+    </tbody>
+  </table>
+</div>
+</section>
+
+<section id="database">
+<div class="container">
+  <div class="section-title"><h2>4. Traffic Database</h2><p>Use SQLite initially for a prototype; PostgreSQL can be introduced later.</p></div>
+  <div class="two">
+    <div class="card"><h3>junctions</h3><pre>junction_id
+junction_name
+latitude
+longitude
+camera_id</pre></div>
+    <div class="card"><h3>roads</h3><pre>road_id
+from_junction
+to_junction
+distance_km
+speed_limit</pre></div>
+    <div class="card"><h3>traffic_readings</h3><pre>reading_id
+junction_id
+timestamp
+vehicle_count
+average_speed
+lane_occupancy
+queue_length
+road_condition
+incident
+traffic_level</pre></div>
+    <div class="card"><h3>routes (optional history)</h3><pre>route_id
+source
+destination
+calculated_at
+distance
+estimated_time
+traffic_level</pre></div>
+  </div>
+</div>
+</section>
+
+<section id="routing">
+<div class="container">
+  <div class="section-title"><h2>5. Road Network + Dynamic Routing</h2><p>Represent the city as a graph: junctions are nodes and roads are edges.</p></div>
+  <div class="big-diagram">
+    <div class="flow">
+      <div class="box">J1<br><small>Node</small></div><div class="arrow">↔</div>
+      <div class="box">J2<br><small>Node</small></div><div class="arrow">↔</div>
+      <div class="box">J4<br><small>Node</small></div>
+    </div>
+    <div class="flow">
+      <div class="box">Road = Edge<br>Distance + speed limit</div>
+      <div class="arrow">+</div>
+      <div class="box">Latest Traffic<br>Current speed/status</div>
+      <div class="arrow">→</div>
+      <div class="box">Dynamic Travel Cost<br>Estimated time</div>
+    </div>
+  </div>
+  <div class="callout" style="margin-top:18px"><b>Important:</b> Model 2 does not need to be another ML model. A graph routing engine can use Dijkstra, A* or another shortest-path algorithm, with traffic-adjusted travel time as the road cost.</div>
+  <div class="grid" style="margin-top:18px">
+    <div class="card"><h3>Road Example A</h3><p>J01 → J02<br>Distance: 1.2 km<br>Current speed: 20 km/h<br>Traffic: Heavy<br><b>ETA ≈ 3.6 min</b></p></div>
+    <div class="card"><h3>Road Example B</h3><p>J01 → J03<br>Distance: 1.5 km<br>Current speed: 45 km/h<br>Traffic: Low<br><b>ETA ≈ 2 min</b></p></div>
+  </div>
+</div>
+</section>
+
+<section id="webapp">
+<div class="container">
+  <div class="section-title"><h2>6. User Web Application</h2><p>The user selects a source and destination. The application returns route options, ETA and congestion.</p></div>
+  <div class="card">
+    <div class="two">
+      <div><b>Starting Point</b><div class="box" style="margin-top:8px;background:#071522;padding:12px;border:1px solid var(--border);border-radius:9px">Junction A ▼</div></div>
+      <div><b>Destination</b><div class="box" style="margin-top:8px;background:#071522;padding:12px;border:1px solid var(--border);border-radius:9px">Junction F ▼</div></div>
+    </div>
+    <div style="text-align:center;margin:22px"><button style="padding:12px 25px;border:0;border-radius:9px;background:#247ed0;color:white;font-weight:700">FIND ROUTE</button></div>
+    <div class="big-diagram">
+      <div style="text-align:center;font-size:20px;margin-bottom:18px">🗺️ LIVE TRAFFIC MAP</div>
+      <div class="flow">
+        <div class="box">J1 <span style="color:var(--green)">●</span></div><div class="arrow">────</div>
+        <div class="box">J2 <span style="color:var(--yellow)">●</span></div><div class="arrow">────</div>
+        <div class="box">J3 <span style="color:var(--red)">●</span></div>
+      </div>
+      <div class="flow">
+        <div class="box">🟢 J1 → Low</div>
+        <div class="box">🟡 J2 → Moderate</div>
+        <div class="box">🔴 J3 → Congested</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <h3>Recommended Route</h3>
+      <p>J1 → J2 → J3 → J6</p>
+      <div class="grid">
+        <div><b>Distance</b><br>5.4 km</div>
+        <div><b>Estimated Time</b><br>12 min</div>
+        <div><b>Traffic</b><br>Moderate</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="container">
+  <div class="section-title"><h2>7. Traffic Color System</h2></div>
+  <div class="traffic">
+    <div class="status"><span class="dot green"></span> Low</div>
+    <div class="status"><span class="dot yellow"></span> Moderate</div>
+    <div class="status"><span class="dot orange"></span> Heavy</div>
+    <div class="status"><span class="dot red"></span> Congested</div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="container">
+  <div class="section-title"><h2>8. Real-Time Backend Loop</h2><p>Run the traffic pipeline continuously, for example every 30 seconds.</p></div>
+  <div class="pipeline">
+    <div class="step"><span class="num">01</span><br>Select Junction</div>
+    <div class="step"><span class="num">02</span><br>Get Next Image</div>
+    <div class="step"><span class="num">03</span><br>AI Processing</div>
+    <div class="step"><span class="num">04</span><br>Update DB</div>
+    <div class="step"><span class="num">05</span><br>Wait & Repeat</div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <b>Example time series</b>
+    <pre>09:00:00  J01 → Moderate
+09:00:30  J01 → Moderate
+09:01:00  J01 → Heavy
+09:01:30  J01 → Congested
+09:02:00  J01 → Heavy</pre>
+  </div>
+</div>
+</section>
+
+<section id="stack">
+<div class="container">
+  <div class="section-title"><h2>9. Technology Stack</h2></div>
+  <div class="grid">
+    <div class="card"><h3>AI / Computer Vision</h3><p>Python + OpenCV<br>Vehicle Detection<br>Feature Extraction<br>Traffic Classification</p></div>
+    <div class="card"><h3>Database</h3><p>SQLite for prototype<br>PostgreSQL for a larger system</p></div>
+    <div class="card"><h3>Routing</h3><p>Graph + A* / Dijkstra<br>Traffic-adjusted travel cost</p></div>
+    <div class="card"><h3>Frontend</h3><p>React for a proper map application, or Streamlit for a simpler first version.</p></div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="container">
+  <div class="section-title"><h2>10. Suggested Project Structure</h2></div>
+<pre>AI_TRAFFIC_SYSTEM/
+├── data/
+│   ├── images/
+│   │   ├── J01/
+│   │   ├── J02/
+│   │   └── ...
+│   └── datasets/
+│       └── traffic_readings.csv
+├── models/
+│   ├── vehicle_detector/
+│   └── traffic_classifier.pkl
+├── database/
+│   ├── traffic.db
+│   └── schema.sql
+├── backend/
+│   ├── image_processor.py
+│   ├── vehicle_detection.py
+│   ├── feature_extraction.py
+│   ├── traffic_prediction.py
+│   ├── database.py
+│   ├── scheduler.py
+│   ├── traffic_api.py
+│   └── routing.py
+├── frontend/
+│   ├── map
+│   ├── route
+│   └── traffic
+├── training/
+│   ├── prepare_dataset.py
+│   ├── train_detector.py
+│   ├── train_classifier.py
+│   └── evaluate.py
+└── README.md</pre>
+</div>
+</section>
+
+<section id="roadmap">
+<div class="container">
+  <div class="section-title"><h2>11. Development Roadmap</h2><p>Build the system incrementally rather than starting with the web map.</p></div>
+  <div class="timeline">
+    <div class="milestone"><h3>Phase 1 — Dataset Preparation</h3><p>Organize 1000 images by junction, sequence/timestamp and camera information; prepare annotations.</p></div>
+    <div class="milestone"><h3>Phase 2 — Vehicle Detection</h3><p>Image → detector → bounding boxes → vehicle count.</p></div>
+    <div class="milestone"><h3>Phase 3 — Feature Extraction</h3><p>Add vehicle count, lane occupancy and queue length; then work on speed, incidents and road condition.</p></div>
+    <div class="milestone"><h3>Phase 4 — Traffic Classification</h3><p>Use defensible labels and train a classifier such as Random Forest / Decision Tree for Low, Moderate, Heavy and Congested.</p></div>
+    <div class="milestone"><h3>Phase 5 — Database</h3><p>Complete the first backend pipeline: Image → AI → Database.</p></div>
+    <div class="milestone"><h3>Phase 6 — Real-Time Simulation</h3><p>Scheduler → next image → AI processing → DB update → repeat.</p></div>
+    <div class="milestone"><h3>Phase 7 — Road Graph</h3><p>Create junction nodes and road edges with distance, normal speed, current speed and traffic status.</p></div>
+    <div class="milestone"><h3>Phase 8 — Routing Engine</h3><p>Source + destination → graph + latest traffic → updated road costs → shortest path → route.</p></div>
+    <div class="milestone"><h3>Phase 9 — Web Map</h3><p>Show junctions, roads, traffic colors, source, destination and calculated route.</p></div>
+    <div class="milestone"><h3>Phase 10 — Full Integration</h3><p>Camera images → Traffic AI → Traffic DB → Routing Engine → Web Map with route, distance, ETA and congestion.</p></div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="container">
+  <div class="section-title"><h2>12. Final Project Deliverables</h2></div>
+  <div class="two">
+    <div class="card">
+      <h3>Component 1 — AI Traffic Monitoring</h3>
+      <p><b>Input:</b> traffic images / camera frames</p>
+      <p><b>Output:</b> Junction ID, vehicle count, average speed, lane occupancy, queue length, road condition, incident, traffic level and timestamp.</p>
+      <p><b>Storage:</b> SQLite / PostgreSQL</p>
+      <p><b>Execution:</b> automatically every N seconds</p>
+    </div>
+    <div class="card">
+      <h3>Component 2 — Intelligent Route Planning</h3>
+      <p><b>Input:</b> starting point + destination</p>
+      <p><b>Uses:</b> road network + distance + current traffic database</p>
+      <p><b>Output:</b> route, distance, estimated travel time, traffic level and congested road segments.</p>
+      <p><b>Display:</b> interactive map</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="container">
+  <div class="section-title"><h2>13. Key Design Decisions</h2></div>
+  <div class="grid">
+    <div class="card"><h3>Sequential Images > Random Images</h3><p>Random image selection can produce unrealistic traffic changes. For a convincing simulation, keep images associated with a junction and sequence/time.</p></div>
+    <div class="card"><h3>Speed Requires Time</h3><p>A single image cannot reliably determine vehicle speed. Use tracking over sequential frames/video and camera calibration.</p></div>
+    <div class="card"><h3>Routing ≠ ML Necessarily</h3><p>The traffic AI produces the current traffic state; a graph algorithm can perform route calculation.</p></div>
+    <div class="card"><h3>Show Multiple Routes</h3><p>Instead of returning only one route, display multiple possible routes with distance, ETA and traffic conditions so the user can compare them.</p></div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="container">
+  <div class="section-title"><h2>14. Final End-to-End Flow</h2></div>
+  <div class="big-diagram">
+    <div class="flow"><div class="box">📷 Camera Images</div><div class="arrow">→</div><div class="box">🤖 Traffic AI</div><div class="arrow">→</div><div class="box">🗄️ Traffic DB</div></div>
+    <div class="down">↓</div>
+    <div class="flow"><div class="box">🚦 Current Traffic</div><div class="arrow">+</div><div class="box">🛣️ Road Network</div><div class="arrow">→</div><div class="box">🧭 Routing Engine</div></div>
+    <div class="down">↓</div>
+    <div class="flow"><div class="box">📍 Source</div><div class="arrow">+</div><div class="box">🏁 Destination</div><div class="arrow">→</div><div class="box">🗺️ Web Map + Route + ETA</div></div>
+  </div>
+  <div class="callout" style="margin-top:20px"><b>Recommended first concrete task:</b> design the database schema and image/dataset structure, then build the vehicle-detection pipeline. Once those are correct, the rest of the architecture follows naturally.</div>
+</div>
+</section>
+</main>
+
+<footer>
+  <div class="container">AI-Based Real-Time Traffic Monitoring & Intelligent Route Planning • Visual project architecture</div>
+</footer>
+</body>
+</html>
